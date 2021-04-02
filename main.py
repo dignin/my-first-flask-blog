@@ -92,6 +92,8 @@ class Comment(db.Model):
 
 db.create_all()
 
+user = User.query.get(1)
+
 
 # Create login manager
 @login_manager.user_loader
@@ -115,7 +117,10 @@ def admin_only(f):
 @app.route('/')
 def get_all_posts():
     posts = BlogPost.query.all()
-    return render_template("index.html", all_posts=posts)
+    if user:
+        return render_template("index.html", all_posts=posts, user=user)
+    else:
+        return render_template("index.html", all_posts=posts)
 
 
 @app.route('/register', methods=['GET', 'POST'])
@@ -144,11 +149,16 @@ def register():
             return redirect(url_for('get_all_posts'))
 
         # Redirect
-
-        return redirect(url_for('get_all_posts'))
+        if user:
+            return redirect(url_for('get_all_posts'), user=user)
+        else:
+            return redirect(url_for('get_all_posts'))
 
     # Return Template
-    return render_template("register.html", form=user_form)
+    if user:
+        return render_template("register.html", form=user_form, user=user)
+    else:
+        return render_template("register.html", form=user_form)
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -168,8 +178,11 @@ def login():
             flash(u'Invalid password or username provided', 'error')
     elif user_login_form.validate_on_submit() and not User.query.filter_by(email=user_login_form.email.data).first():
         flash(u'Invalid password or username provided', 'error')
+    if user:
 
-    return render_template("login.html", form=user_login_form)
+        return render_template("login.html", form=user_login_form, user=user)
+    else:
+        return render_template("login.html", form=user_login_form)
 
 
 @app.route('/logout')
@@ -197,12 +210,18 @@ def show_post(post_id):
 
 @app.route("/about")
 def about():
-    return render_template("about.html")
+    if user:
+        return render_template("about.html", user=user)
+    else:
+        return render_template("about.html")
 
 
 @app.route("/contact")
 def contact():
-    return render_template("contact.html")
+    if user:
+        return render_template("contact.html", user=user)
+    else:
+        return render_template("contact.html")
 
 
 @app.route("/new-post", methods=['GET', 'POST'])
@@ -222,7 +241,10 @@ def add_new_post():
         db.session.add(new_post)
         db.session.commit()
         return redirect(url_for("get_all_posts"))
-    return render_template("make-post.html", form=form)
+    if user:
+        return render_template("make-post.html", form=form, user=user)
+    else:
+        return render_template("make-post.html", form=form)
 
 
 @app.route("/edit-post/<int:post_id>")
@@ -243,9 +265,12 @@ def edit_post(post_id):
         post.author = edit_form.author.data
         post.body = edit_form.body.data
         db.session.commit()
-        return redirect(url_for("show_post", post_id=post.id))
+        if user:
+            return redirect(url_for("show_post", post_id=post.id, user=user))
+        else:
+           return redirect(url_for("show_post", post_id=post.id))
 
-    return render_template("make-post.html", form=edit_form)
+    return render_template("make-post.html", form=edit_form,)
 
 
 @app.route("/delete/<int:post_id>")
