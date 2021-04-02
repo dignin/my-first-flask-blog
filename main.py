@@ -14,8 +14,10 @@ from os import getenv
 # Initialize appilaction
 
 app = Flask(__name__)
-key = 'BLOG_SECRET'
-secret = getenv(key)
+csrf_key = 'BLOG_SECRET'
+secret = getenv(csrf_key)
+db_key = 'DATABASE_URL'
+db_url = getenv(db_key, "sqlite:///blog.db")
 print(secret)
 app.config['SECRET_KEY'] = secret
 #app.config['SECRET_KEY'] = '8BYkEfBA6OdonzWlSihBXox7C0sKR6b'
@@ -33,7 +35,7 @@ gravatar = Gravatar(app,
                     base_url=None)
 
 ##CONNECT TO DB
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///blog.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = db_url
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
